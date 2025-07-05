@@ -25,10 +25,9 @@ function App() {
   const [activeTab, setActiveTab] = useState('diet'); // 'diet' or 'exercise'
   const totalDays = 30;
 
-  // State to store completion status for each meal of each day
+  // State to store overall meal completion status for each meal of each day (persists)
   // Structure: { day1: { breakfast: true, midMorningSnack: false, ... }, day2: { ... } }
   const [mealCompletion, setMealCompletion] = useState(() => {
-    // Initialize meal completion state from localStorage if available
     try {
       const savedCompletion = localStorage.getItem('mealCompletion');
       return savedCompletion ? JSON.parse(savedCompletion) : {};
@@ -37,6 +36,15 @@ function App() {
       return {};
     }
   });
+
+  // Local state for individual checklist items within a meal (does NOT persist across day changes/reloads)
+  const [checklistStates, setChecklistStates] = useState({});
+
+  // Reset checklist states when currentDay changes
+  useEffect(() => {
+    setChecklistStates({});
+  }, [currentDay]);
+
 
   const [streak, setStreak] = useState(0);
   const [daysAccomplished, setDaysAccomplished] = useState(0);
@@ -154,172 +162,164 @@ function App() {
       breakfast: {
         dish: day % 3 === 0 ? "Sprouted Moong Dal Salad" : (day % 2 === 0 ? "Besan Cheela" : "Spicy Egg Bhurji"),
         whatToMake: [
-          "**Spicy Egg Bhurji:**",
-          "• 3-4 egg whites + 1 whole egg",
-          "• 1/2 small onion, 1/2 tomato, 1 green chili",
-          "• Small piece ginger, fresh coriander",
-          "• Spices (turmeric, red chili, salt)",
-          "",
-          "**Besan Cheela:**",
-          "• 1/2 cup besan (gram flour)",
-          "• 1/4 cup finely chopped mixed veggies (onion, bell pepper, spinach)",
-          "• 1 green chili, small piece ginger, fresh coriander",
-          "• Spices (turmeric, red chili, ajwain, salt)",
-          "",
-          "**Sprouted Moong Dal Salad:**",
-          "• 1 cup sprouted moong dal",
-          "• 1/2 cucumber, 1/2 tomato, 1/4 onion",
-          "• 1 green chili, fresh coriander",
-          "• Lemon juice, chaat masala, black salt"
+          { type: 'subtitle', text: 'Spicy Egg Bhurji:' },
+          { type: 'item', text: '• 3-4 egg whites + 1 whole egg' },
+          { type: 'item', text: '• 1/2 small onion, 1/2 tomato, 1 green chili' },
+          { type: 'item', text: '• Small piece ginger, fresh coriander' },
+          { type: 'item', text: '• Spices (turmeric, red chili, salt)' },
+          { type: 'subtitle', text: 'Besan Cheela:' },
+          { type: 'item', text: '• 1/2 cup besan (gram flour)' },
+          { type: 'item', text: '• 1/4 cup finely chopped mixed veggies (onion, bell pepper, spinach)' },
+          { type: 'item', text: '• 1 green chili, small piece ginger, fresh coriander' },
+          { type: 'item', text: '• Spices (turmeric, red chili, ajwain, salt)' },
+          { type: 'subtitle', text: 'Sprouted Moong Dal Salad:' },
+          { type: 'item', text: '• 1 cup sprouted moong dal' },
+          { type: 'item', text: '• 1/2 cucumber, 1/2 tomato, 1/4 onion' },
+          { type: 'item', text: '• 1 green chili, fresh coriander' },
+          { type: 'item', text: '• Lemon juice, chaat masala, black salt' }
         ],
         howToMake: [
-          "**Spicy Egg Bhurji:**",
-          "1. Heat 1 tsp oil in a non-stick pan. Sauté finely chopped onion until translucent.",
-          "2. Add ginger-garlic paste (or grated), green chili, and chopped tomato. Cook until soft.",
-          "3. Add turmeric, red chili powder, and salt. Whisk eggs and egg whites, pour into pan. Scramble until cooked.",
-          "4. Garnish with fresh coriander.",
-          "",
-          "**Besan Cheela:**",
-          "1. In a bowl, mix besan with water to form a smooth, thin batter (like pancake batter).",
-          "2. Add all chopped veggies, ginger, green chili, coriander, and spices.",
-          "3. Heat a non-stick tawa, lightly grease with a few drops of oil.",
-          "4. Pour a ladleful of batter and spread into a thin circle. Cook on medium heat until golden brown on both sides.",
-          "",
-          "**Sprouted Moong Dal Salad:**",
-          "1. In a bowl, combine sprouted moong dal with all chopped vegetables, green chili, and coriander.",
-          "2. Add lemon juice, chaat masala, and black salt. Toss well and serve fresh."
+          { type: 'subtitle', text: 'Spicy Egg Bhurji:' },
+          { type: 'item', text: '1. Heat 1 tsp oil in a non-stick pan. Sauté finely chopped onion until translucent.' },
+          { type: 'item', text: '2. Add ginger-garlic paste (or grated), green chili, and chopped tomato. Cook until soft.' },
+          { type: 'item', text: '3. Add turmeric, red chili powder, and salt. Whisk eggs and egg whites, pour into pan. Scramble until cooked.' },
+          { type: 'item', text: '4. Garnish with fresh coriander.' },
+          { type: 'subtitle', text: 'Besan Cheela:' },
+          { type: 'item', text: '1. In a bowl, mix besan with water to form a smooth, thin batter (like pancake batter).' },
+          { type: 'item', text: '2. Add all chopped veggies, ginger, green chili, coriander, and spices.' },
+          { type: 'item', text: '3. Heat a non-stick tawa, lightly grease with a few drops of oil.' },
+          { type: 'item', text: '4. Pour a ladleful of batter and spread into a thin circle. Cook on medium heat until golden brown on both sides.' },
+          { type: 'subtitle', text: 'Sprouted Moong Dal Salad:' },
+          { type: 'item', text: '1. In a bowl, combine sprouted moong dal with all chopped vegetables, green chili, and coriander.' },
+          { type: 'item', text: '2. Add lemon juice, chaat masala, and black salt. Toss well and serve fresh.' }
         ],
         shopList: [
-          "• For Egg Bhurji: Eggs, Onion, Tomato, Green Chili, Ginger, Coriander.",
-          "• For Besan Cheela: Besan (Gram Flour), Onion, Bell Pepper, Spinach, Green Chili, Ginger, Coriander.",
-          "• For Sprouted Moong Dal Salad: Whole Moong (to sprout at home or buy pre-sprouted), Cucumber, Tomato, Onion, Green Chili, Coriander, Lemon."
+          { type: 'item', text: '• For Egg Bhurji: Eggs, Onion, Tomato, Green Chili, Ginger, Coriander.' },
+          { type: 'item', text: '• For Besan Cheela: Besan (Gram Flour), Onion, Bell Pepper, Spinach, Green Chili, Ginger, Coriander.' },
+          { type: 'item', text: '• For Sprouted Moong Dal Salad: Whole Moong (to sprout at home or buy pre-sprouted), Cucumber, Tomato, Onion, Green Chili, Coriander, Lemon.' }
         ]
       },
       midMorningSnack: {
         dish: "Plain Greek Yogurt with Cumin/Chili",
         whatToMake: [
-          "• 1 cup plain Greek yogurt",
-          "• 1/4 tsp roasted cumin powder",
-          "• Pinch of black salt",
-          "• Pinch of red chili powder"
+          { type: 'item', text: '• 1 cup plain Greek yogurt' },
+          { type: 'item', text: '• 1/4 tsp roasted cumin powder' },
+          { type: 'item', text: '• Pinch of black salt' },
+          { type: 'item', text: '• Pinch of red chili powder' }
         ],
         howToMake: [
-          "1. Mix all ingredients in a bowl.",
-          "2. Enjoy."
+          { type: 'item', text: '1. Mix all ingredients in a bowl.' },
+          { type: 'item', text: '2. Enjoy.' }
         ],
         shopList: [
-          "• Plain Greek Yogurt",
-          "• Cumin Powder",
-          "• Red Chili Powder",
-          "• Black Salt"
+          { type: 'item', text: '• Plain Greek Yogurt' },
+          { type: 'item', text: '• Cumin Powder' },
+          { type: 'item', text: '• Red Chili Powder' },
+          { type: 'item', text: '• Black Salt' }
         ]
       },
       lunch: {
         dish: day % 2 === 0 ? "Spicy Mixed Vegetable Sabzi with 1 Whole Wheat Roti" : "Masoor Dal (Red Lentil) with Brown Rice",
         whatToMake: [
-          "**Spicy Mixed Vegetable Sabzi:**",
-          "• 1 cup mixed non-starchy vegetables (broccoli, bell peppers, beans, spinach)",
-          "• 1/2 onion, 1/2 tomato, 1 green chili",
-          "• Ginger-garlic paste, spices (turmeric, red chili, coriander, cumin, garam masala)",
-          "• 1-2 thin whole wheat rotis",
-          "",
-          "**Masoor Dal with Brown Rice:**",
-          "• 1/2 cup masoor dal",
-          "• 1/2 onion, 1/2 tomato, 1 green chili",
-          "• Ginger-garlic paste, spices (turmeric, red chili, coriander)",
-          "• Tempering ingredients (mustard seeds, cumin seeds, curry leaves, hing)",
-          "• 1/2 cup cooked brown rice"
+          { type: 'subtitle', text: 'Spicy Mixed Vegetable Sabzi:' },
+          { type: 'item', text: '• 1 cup mixed non-starchy vegetables (broccoli, bell peppers, beans, spinach)' },
+          { type: 'item', text: '• 1/2 onion, 1/2 tomato, 1 green chili' },
+          { type: 'item', text: '• Ginger-garlic paste, spices (turmeric, red chili, coriander, cumin, garam masala)' },
+          { type: 'item', text: '• 1-2 thin whole wheat rotis' },
+          { type: 'subtitle', text: 'Masoor Dal with Brown Rice:' },
+          { type: 'item', text: '• 1/2 cup masoor dal' },
+          { type: 'item', text: '• 1/2 onion, 1/2 tomato, 1 green chili' },
+          { type: 'item', text: '• Ginger-garlic paste, spices (turmeric, red chili, coriander)' },
+          { type: 'item', text: '• Tempering ingredients (mustard seeds, cumin seeds, curry leaves, hing)' },
+          { type: 'item', text: '• 1/2 cup cooked brown rice' }
         ],
         howToMake: [
-          "**Spicy Mixed Vegetable Sabzi:**",
-          "1. Heat 1 tsp oil in a non-stick pan. Sauté onion until translucent.",
-          "2. Add ginger-garlic paste, green chili, and tomato. Cook until soft.",
-          "3. Add all spices and cook for 1-2 minutes.",
-          "4. Add chopped mixed vegetables and a splash of water. Cover and cook until veggies are tender-crisp.",
-          "5. Serve with a thin whole wheat roti (made without oil/ghee).",
-          "",
-          "**Masoor Dal with Brown Rice:**",
-          "1. Wash masoor dal. In a pressure cooker or pot, combine dal with 2-3 cups water, chopped onion, tomato, green chili, ginger-garlic paste, turmeric, red chili, and coriander powder.",
-          "2. Cook until dal is soft.",
-          "3. For tempering, heat 1 tsp oil in a small pan. Add mustard seeds, cumin seeds, curry leaves, and hing. Once spluttering, pour over the dal.",
-          "4. Serve with measured brown rice."
+          { type: 'subtitle', text: 'Spicy Mixed Vegetable Sabzi:' },
+          { type: 'item', text: '1. Heat 1 tsp oil in a non-stick pan. Sauté onion until translucent.' },
+          { type: 'item', text: '2. Add ginger-garlic paste, green chili, and tomato. Cook until soft.' },
+          { type: 'item', text: '3. Add all spices and cook for 1-2 minutes.' },
+          { type: 'item', text: '4. Add chopped mixed vegetables and a splash of water. Cover and cook until veggies are tender-crisp.' },
+          { type: 'item', text: '5. Serve with a thin whole wheat roti (made without oil/ghee).' },
+          { type: 'subtitle', text: 'Masoor Dal with Brown Rice:' },
+          { type: 'item', text: '1. Wash masoor dal. In a pressure cooker or pot, combine dal with 2-3 cups water, chopped onion, tomato, green chili, ginger-garlic paste, turmeric, red chili, and coriander powder.' },
+          { type: 'item', text: '2. Cook until dal is soft.' },
+          { type: 'item', text: '3. For tempering, heat 1 tsp oil in a small pan. Add mustard seeds, cumin seeds, curry leaves, and hing. Once spluttering, pour over the dal.' },
+          { type: 'item', text: '4. Serve with measured brown rice.' }
         ],
         shopList: [
-          "• For Sabzi: Mixed Vegetables (Broccoli, Bell Peppers, Beans, Spinach), Onion, Tomato, Green Chili, Ginger, Garlic, Whole Wheat Flour.",
-          "• For Masoor Dal: Masoor Dal (Red Lentil), Onion, Tomato, Green Chili, Ginger, Garlic, Mustard Seeds, Cumin Seeds, Curry Leaves, Hing, Brown Rice."
+          { type: 'item', text: '• For Sabzi: Mixed Vegetables (Broccoli, Bell Peppers, Beans, Spinach), Onion, Tomato, Green Chili, Ginger, Garlic, Whole Wheat Flour.' },
+          { type: 'item', text: '• For Masoor Dal: Masoor Dal (Red Lentil), Onion, Tomato, Green Chili, Ginger, Garlic, Mustard Seeds, Cumin Seeds, Curry Leaves, Hing, Brown Rice.' }
         ]
       },
       preWorkout: {
         dish: "Small Apple",
         whatToMake: [
-          "• 1 small apple."
+          { type: 'item', text: '• 1 small apple.' }
         ],
         howToMake: [
-          "1. Eat it."
+          { type: 'item', text: '1. Eat it.' }
         ],
         shopList: [
-          "• Apples."
+          { type: 'item', text: '• Apples.' }
         ]
       },
       postWorkout: {
         dish: "Protein Shake (Water-based)",
         whatToMake: [
-          "• 1 scoop protein powder",
-          "• 200-250ml water"
+          { type: 'item', text: '• 1 scoop protein powder' },
+          { type: 'item', text: '• 200-250ml water' }
         ],
         howToMake: [
-          "1. Mix protein powder with water in a shaker bottle until smooth.",
-          "2. Drink immediately after workout."
+          { type: 'item', text: '1. Mix protein powder with water in a shaker bottle until smooth.' },
+          { type: 'item', text: '2. Drink immediately after workout.' }
         ],
         shopList: [
-          "• Protein Powder (Whey or Plant-based)."
+          { type: 'item', text: '• Protein Powder (Whey or Plant-based).' }
         ]
       },
       dinner: {
         dish: day % 2 === 0 ? "Spicy Paneer Bhurji with Steamed Spinach" : "Chana Dal (Split Bengal Gram) with Cucumber Salad",
         whatToMake: [
-          "**Spicy Paneer Bhurji:**",
-          "• 150-200g low-fat paneer (crumbled)",
-          "• 1/2 onion, 1/2 tomato, 1 green chili",
-          "• Ginger-garlic paste, spices (turmeric, red chili, coriander, garam masala)",
-          "• 1 cup steamed spinach",
-          "",
-          "**Chana Dal with Cucumber Salad:**",
-          "• 1/2 cup chana dal",
-          "• 1/2 onion, 1/2 tomato, 1 green chili",
-          "• Ginger-garlic paste, spices (turmeric, red chili, coriander)",
-          "• Tempering ingredients (mustard seeds, cumin seeds, curry leaves, hing)",
-          "• 1 large cucumber, lemon, black salt, red chili powder"
+          { type: 'subtitle', text: 'Spicy Paneer Bhurji:' },
+          { type: 'item', text: '• 150-200g low-fat paneer (crumbled)' },
+          { type: 'item', text: '• 1/2 onion, 1/2 tomato, 1 green chili' },
+          { type: 'item', text: '• Ginger-garlic paste, spices (turmeric, red chili, coriander, garam masala)' },
+          { type: 'item', text: '• 1 cup steamed spinach' },
+          { type: 'subtitle', text: 'Chana Dal with Cucumber Salad:' },
+          { type: 'item', text: '• 1/2 cup chana dal' },
+          { type: 'item', text: '• 1/2 onion, 1/2 tomato, 1 green chili' },
+          { type: 'item', text: '• Ginger-garlic paste, spices (turmeric, red chili, coriander)' },
+          { type: 'item', text: '• Tempering ingredients (mustard seeds, cumin seeds, curry leaves, hing)' },
+          { type: 'item', text: '• 1 large cucumber, lemon, black salt, red chili powder' }
         ],
         howToMake: [
-          "**Spicy Paneer Bhurji:**",
-          "1. Heat 1 tsp oil in a non-stick pan. Sauté onion until translucent.",
-          "2. Add ginger-garlic paste, green chili, and tomato. Cook until soft.",
-          "3. Add all spices and cook for 1-2 minutes.",
-          "4. Add crumbled paneer and cook for 5-7 minutes, stirring occasionally.",
-          "5. Serve with steamed spinach.",
-          "",
-          "**Chana Dal with Cucumber Salad:**",
-          "1. Wash chana dal. In a pressure cooker or pot, combine dal with 2-3 cups water, chopped onion, tomato, green chili, ginger-garlic paste, turmeric, red chili, and coriander powder.",
-          "2. Cook until dal is soft.",
-          "3. For tempering, heat 1 tsp oil in a small pan. Add mustard seeds, cumin seeds, curry leaves, and hing. Once spluttering, pour over the dal.",
-          "4. For salad, chop cucumber, add lemon juice, black salt, and red chili powder."
+          { type: 'subtitle', text: 'Spicy Paneer Bhurji:' },
+          { type: 'item', text: '1. Heat 1 tsp oil in a non-stick pan. Sauté finely chopped onion until translucent.' },
+          { type: 'item', text: '2. Add ginger-garlic paste, green chili, and tomato. Cook until soft.' },
+          { type: 'item', text: '3. Add all spices and cook for 1-2 minutes.' },
+          { type: 'item', text: '4. Add crumbled paneer and cook for 5-7 minutes, stirring occasionally.' },
+          { type: 'item', text: '5. Serve with steamed spinach.' },
+          { type: 'subtitle', text: 'Chana Dal with Cucumber Salad:' },
+          { type: 'item', text: '1. Wash chana dal. In a pressure cooker or pot, combine dal with 2-3 cups water, chopped onion, tomato, green chili, ginger-garlic paste, turmeric, red chili, and coriander powder.' },
+          { type: 'item', text: '2. Cook until dal is soft.' },
+          { type: 'item', text: '3. For tempering, heat 1 tsp oil in a small pan. Add mustard seeds, cumin seeds, curry leaves, and hing. Once spluttering, pour over the dal.' },
+          { type: 'item', text: '4. For salad, chop cucumber, add lemon juice, black salt, and red chili powder.' }
         ],
         shopList: [
-          "• For Paneer Bhurji: Low-fat Paneer, Onion, Tomato, Green Chili, Ginger, Garlic, Spinach.",
-          "• For Chana Dal: Chana Dal, Onion, Tomato, Green Chili, Ginger, Garlic, Mustard Seeds, Cumin Seeds, Curry Leaves, Hing, Cucumber, Lemon."
+          { type: 'item', text: '• For Paneer Bhurji: Low-fat Paneer, Onion, Tomato, Green Chili, Ginger, Garlic, Spinach.' },
+          { type: 'item', text: '• For Chana Dal: Chana Dal, Onion, Tomato, Green Chili, Ginger, Garlic, Mustard Seeds, Cumin Seeds, Curry Leaves, Hing, Cucumber, Lemon.' }
         ]
       },
       bedtime: {
         dish: "Small Bowl of Plain Greek Yogurt or 3-4 Egg Whites",
         whatToMake: [
-          "• 1/2 cup plain Greek yogurt OR 3-4 egg whites."
+          { type: 'item', text: '• 1/2 cup plain Greek yogurt OR 3-4 egg whites.' }
         ],
         howToMake: [
-          "1. Eat plain Greek yogurt OR scramble egg whites (without oil, just a pinch of salt)."
+          { type: 'item', text: '1. Eat plain Greek yogurt OR scramble egg whites (without oil, just a pinch of salt).' }
         ],
         shopList: [
-          "• Plain Greek Yogurt OR Eggs."
+          { type: 'item', text: '• Plain Greek Yogurt OR Eggs.' }
         ]
       }
     };
@@ -369,7 +369,7 @@ function App() {
 
   const currentPlan = plans[currentDay - 1];
 
-  // Function to handle meal completion toggle
+  // Function to handle overall meal completion toggle (persists)
   const handleMealCompletion = useCallback((day, mealTime, isDone) => {
     setMealCompletion(prev => {
       const newCompletion = { ...prev };
@@ -378,6 +378,17 @@ function App() {
       }
       newCompletion[`day${day}`][mealTime] = isDone;
       return newCompletion;
+    });
+  }, []);
+
+  // Function to handle individual checklist item toggle (local state only)
+  const handleChecklistItemToggle = useCallback((mealTime, listType, index) => {
+    setChecklistStates(prev => {
+      const newStates = { ...prev };
+      if (!newStates[mealTime]) newStates[mealTime] = {};
+      if (!newStates[mealTime][listType]) newStates[mealTime][listType] = {};
+      newStates[mealTime][listType][index] = !newStates[mealTime][listType][index];
+      return newStates;
     });
   }, []);
 
@@ -399,11 +410,30 @@ function App() {
         }
       } else {
         consecutive = false; // Break streak if a day is not fully accomplished
-        currentStreak = 0; // Reset streak if an incomplete day is encountered
+        // The streak should reset only if the *current* day is incomplete,
+        // but if a past day was incomplete, it just prevents further streak building.
+        // For simplicity, we'll reset if any day in the sequence is incomplete.
       }
     }
     setDaysAccomplished(accomplishedCount);
-    setStreak(currentStreak);
+
+    // Recalculate streak more accurately: find the longest consecutive completed sequence ending at the current day or before.
+    let tempStreak = 0;
+    let maxStreak = 0;
+    for (let d = 1; d <= totalDays; d++) {
+        const dayCompletion = mealCompletion[`day${d}`];
+        const allMealsDoneForDay = dayCompletion &&
+            Object.keys(plans[d - 1].diet).every(meal => dayCompletion[meal]);
+
+        if (allMealsDoneForDay) {
+            tempStreak++;
+        } else {
+            tempStreak = 0; // Reset if day is not fully done
+        }
+        maxStreak = Math.max(maxStreak, tempStreak);
+    }
+    setStreak(maxStreak);
+
   }, [mealCompletion, totalDays, plans]);
 
 
@@ -460,6 +490,31 @@ function App() {
             box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
             backdrop-filter: blur(5px);
             -webkit-backdrop-filter: blur(5px);
+          }
+
+          .checklist-item {
+            cursor: pointer;
+            padding: 4px 0;
+            transition: all 0.2s ease-in-out;
+            display: flex;
+            align-items: center;
+          }
+
+          .checklist-item.completed {
+            text-decoration: line-through;
+            opacity: 0.6;
+            color: #a0a0a0; /* A slightly darker gray for completed items */
+          }
+          .checklist-item .check-icon {
+            margin-right: 8px;
+            color: #fcd34d; /* yellow-300 */
+          }
+          .subtitle-text {
+            font-style: italic;
+            font-size: 1.125rem; /* text-lg */
+            margin-top: 1rem;
+            margin-bottom: 0.5rem;
+            color: #fcd34d; /* yellow-300 */
           }
         `}
       </style>
@@ -585,26 +640,65 @@ function App() {
                     <div className="space-y-4">
                       <div className="p-4 rounded-lg glass-inner-detail">
                         <h5 className="font-semibold text-yellow-300 flex items-center gap-1.5"><BookOpenText size={18} /> What to Make:</h5>
-                        <ul className="list-disc list-inside space-y-1 text-gray-300 font-inter leading-relaxed">
-                          {details.whatToMake.map((item, idx) => (
-                            <li key={idx} dangerouslySetInnerHTML={{ __html: item }} />
-                          ))}
+                        <ul className="list-none space-y-1 text-gray-300 font-inter leading-relaxed">
+                          {details.whatToMake.map((item, idx) => {
+                            if (item.type === 'subtitle') {
+                              return <p key={idx} className="subtitle-text">{item.text.replace(/\*\*/g, '')}</p>;
+                            }
+                            const isChecked = checklistStates[mealTime]?.whatToMake?.[idx] || false;
+                            return (
+                              <li
+                                key={idx}
+                                className={`checklist-item ${isChecked ? 'completed' : ''}`}
+                                onClick={() => handleChecklistItemToggle(mealTime, 'whatToMake', idx)}
+                              >
+                                {isChecked ? <CheckCircle size={16} className="check-icon" /> : <span className="w-4 h-4 inline-block mr-2 border border-gray-500 rounded-sm"></span>}
+                                <span dangerouslySetInnerHTML={{ __html: item.text }} />
+                              </li>
+                            );
+                          })}
                         </ul>
                       </div>
                       <div className="p-4 rounded-lg glass-inner-detail">
                         <h5 className="font-semibold text-yellow-300 flex items-center gap-1.5"><Flame size={18} /> How to Make:</h5>
-                        <ol className="list-decimal list-inside space-y-1 text-gray-300 font-inter leading-relaxed">
-                          {details.howToMake.map((item, idx) => (
-                            <li key={idx} dangerouslySetInnerHTML={{ __html: item }} />
-                          ))}
+                        <ol className="list-none space-y-1 text-gray-300 font-inter leading-relaxed">
+                          {details.howToMake.map((item, idx) => {
+                            if (item.type === 'subtitle') {
+                              return <p key={idx} className="subtitle-text">{item.text.replace(/\*\*/g, '')}</p>;
+                            }
+                            const isChecked = checklistStates[mealTime]?.howToMake?.[idx] || false;
+                            return (
+                              <li
+                                key={idx}
+                                className={`checklist-item ${isChecked ? 'completed' : ''}`}
+                                onClick={() => handleChecklistItemToggle(mealTime, 'howToMake', idx)}
+                              >
+                                {isChecked ? <CheckCircle size={16} className="check-icon" /> : <span className="w-4 h-4 inline-block mr-2 border border-gray-500 rounded-sm"></span>}
+                                <span dangerouslySetInnerHTML={{ __html: item.text }} />
+                              </li>
+                            );
+                          })}
                         </ol>
                       </div>
                       <div className="p-4 rounded-lg glass-inner-detail">
                         <h5 className="font-semibold text-yellow-300 flex items-center gap-1.5"><ShoppingCart size={18} /> What to Order from Shop:</h5>
-                        <ul className="list-disc list-inside space-y-1 text-gray-300 font-inter leading-relaxed">
-                          {details.shopList.map((item, idx) => (
-                            <li key={idx} dangerouslySetInnerHTML={{ __html: item }} />
-                          ))}
+                        <ul className="list-none space-y-1 text-gray-300 font-inter leading-relaxed">
+                          {details.shopList.map((item, idx) => {
+                            if (item.type === 'subtitle') {
+                              return <p key={idx} className="subtitle-text">{item.text.replace(/\*\*/g, '')}</p>;
+                            }
+                            const isChecked = checklistStates[mealTime]?.shopList?.[idx] || false;
+                            return (
+                              <li
+                                key={idx}
+                                className={`checklist-item ${isChecked ? 'completed' : ''}`}
+                                onClick={() => handleChecklistItemToggle(mealTime, 'shopList', idx)}
+                              >
+                                {isChecked ? <CheckCircle size={16} className="check-icon" /> : <span className="w-4 h-4 inline-block mr-2 border border-gray-500 rounded-sm"></span>}
+                                <span dangerouslySetInnerHTML={{ __html: item.text }} />
+                              </li>
+                            );
+                          })}
                         </ul>
                       </div>
                       {/* Editable DONE section */}
