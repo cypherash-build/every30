@@ -278,7 +278,7 @@ function App() {
         ]
       },
       dinner: {
-        dish: day % 2 === 0 ? "Spicy Paneer Bhurji with Steamed Spinach" : "Chana Dal (Split Bengal Gram) with Cucumber Salad",
+        dish: "Small Bowl of Plain Greek Yogurt or 3-4 Egg Whites",
         whatToMake: [
           { type: 'subtitle', text: 'Spicy Paneer Bhurji:' },
           { type: 'item', text: '• 150-200g low-fat paneer (crumbled)' },
@@ -643,7 +643,7 @@ function App() {
                         <ul className="list-none space-y-1 text-gray-300 font-inter leading-relaxed">
                           {details.whatToMake.map((item, idx) => {
                             if (item.type === 'subtitle') {
-                              return <p key={idx} className="subtitle-text">{item.text.replace(/\*\*/g, '')}</p>;
+                              return <p key={idx} className="subtitle-text">{item.text}</p>;
                             }
                             const isChecked = checklistStates[mealTime]?.whatToMake?.[idx] || false;
                             return (
@@ -664,7 +664,7 @@ function App() {
                         <ol className="list-none space-y-1 text-gray-300 font-inter leading-relaxed">
                           {details.howToMake.map((item, idx) => {
                             if (item.type === 'subtitle') {
-                              return <p key={idx} className="subtitle-text">{item.text.replace(/\*\*/g, '')}</p>;
+                              return <p key={idx} className="subtitle-text">{item.text}</p>;
                             }
                             const isChecked = checklistStates[mealTime]?.howToMake?.[idx] || false;
                             return (
@@ -685,7 +685,7 @@ function App() {
                         <ul className="list-none space-y-1 text-gray-300 font-inter leading-relaxed">
                           {details.shopList.map((item, idx) => {
                             if (item.type === 'subtitle') {
-                              return <p key={idx} className="subtitle-text">{item.text.replace(/\*\*/g, '')}</p>;
+                              return <p key={idx} className="subtitle-text">{item.text}</p>;
                             }
                             const isChecked = checklistStates[mealTime]?.shopList?.[idx] || false;
                             return (
